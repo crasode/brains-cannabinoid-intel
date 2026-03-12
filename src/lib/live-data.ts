@@ -96,19 +96,46 @@ async function getPublicationCount(name: string): Promise<number> {
   }
 }
 
+function cleanText(value?: string) {
+  if (!value) return "";
+  return value
+    .replace(/<mark[^>]*>/gi, "")
+    .replace(/<\/mark>/gi, "")
+    .replace(/&rarr;/g, "→")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function summarizeTitle(title: string) {
+  const cleaned = cleanText(title);
+  const compact = cleaned
+    .replace(/^PK\/PD of /i, "PK/PD: ")
+    .replace(/^Comparing /i, "Comparison: ")
+    .replace(/^Improvement of Quality of Life by /i, "Quality of Life: ")
+    .replace(/ in Older Adults$/i, " — Older Adults")
+    .replace(/ in the Emergency Department$/i, " — Emergency Department");
+
+  if (compact.length <= 110) return compact;
+  const parts = compact.split(": ");
+  if (parts.length > 1) return `${parts[0]}: ${parts[1].slice(0, 72).trim()}…`;
+  return `${compact.slice(0, 96).trim()}…`;
+}
+
 function normalizeStudy(study: CtGovStudy) {
   const protocol = study.protocolSection || {};
   const id = protocol.identificationModule?.nctId || protocol.identificationModule?.orgStudyIdInfo?.id || crypto.randomUUID();
-  const title = protocol.identificationModule?.briefTitle || protocol.identificationModule?.officialTitle || "Untitled study";
+  const rawTitle = protocol.identificationModule?.briefTitle || protocol.identificationModule?.officialTitle || "Untitled study";
+  const title = summarizeTitle(rawTitle);
   const status = protocol.statusModule?.overallStatus || "Unknown";
   const phase = protocol.designModule?.phases?.join(", ") || "Not specified";
-  const condition = protocol.conditionsModule?.conditions || [];
-  const interventions = (protocol.armsInterventionsModule?.interventions || []).map((item) => item.name).filter(Boolean) as string[];
-  const sponsors = [protocol.sponsorCollaboratorsModule?.leadSponsor?.name, ...(protocol.sponsorCollaboratorsModule?.collaborators || []).map((x) => x.name)].filter(Boolean) as string[];
+  const condition = (protocol.conditionsModule?.conditions || []).map(cleanText).filter(Boolean);
+  const interventions = (protocol.armsInterventionsModule?.interventions || []).map((item) => cleanText(item.name)).filter(Boolean) as string[];
+  const sponsors = [protocol.sponsorCollaboratorsModule?.leadSponsor?.name, ...(protocol.sponsorCollaboratorsModule?.collaborators || []).map((x) => x.name)].map(cleanText).filter(Boolean) as string[];
   const overallOfficials = protocol.contactsLocationsModule?.overallOfficials || [];
-  const leadResearchers = overallOfficials.map((x) => x.name).filter(Boolean) as string[];
-  const institutions = [...new Set(overallOfficials.map((x) => x.affiliation).filter(Boolean) as string[])];
-  const countries = [...new Set((protocol.contactsLocationsModule?.locations || []).map((x) => x.country).filter(Boolean) as string[])];
+  const leadResearchers = overallOfficials.map((x) => cleanText(x.name)).filter(Boolean) as string[];
+  const institutions = [...new Set(overallOfficials.map((x) => cleanText(x.affiliation)).filter(Boolean) as string[])];
+  const countries = [...new Set((protocol.contactsLocationsModule?.locations || []).map((x) => cleanText(x.country)).filter(Boolean) as string[])];
   const firstPosted = protocol.statusModule?.studyFirstPostDateStruct?.date;
   const lastUpdated = protocol.statusModule?.lastUpdatePostDateStruct?.date;
   return { id, title, status, phase, condition, interventions, sponsors, institutions, countries, leadResearchers, firstPosted, lastUpdated };

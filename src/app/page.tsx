@@ -79,7 +79,7 @@ export default async function Home() {
                         <span className="font-medium text-[#0d2035]">Countries:</span> {trial.countries.join(", ") || "Not listed"}
                       </p>
                       <p className="mt-1 text-sm leading-7 text-[#526174]">
-                        <span className="font-medium text-[#0d2035]">Interventions:</span> {trial.interventions.join(", ") || "Not listed"}
+                        <span className="font-medium text-[#0d2035]">Interventions:</span> {(trial.interventions.slice(0, 3).join(", ") || "Not listed")}{trial.interventions.length > 3 ? "…" : ""}
                       </p>
                     </div>
                     <div className={`min-w-[130px] px-4 py-3 text-center ${scoreTone(trial.commercialScore)}`}>
