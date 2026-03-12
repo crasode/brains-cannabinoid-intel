@@ -10,7 +10,7 @@ function scoreTone(score: number) {
 
 function metric(label: string, value: string | number) {
   return (
-    <div className="border border-white/10 bg-white/5 p-5">
+    <div className="border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
       <div className="text-3xl font-[family-name:var(--font-serif)]">{value}</div>
       <div className="mt-2 text-xs uppercase tracking-[0.2em] text-white/55">{label}</div>
     </div>
@@ -22,31 +22,76 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#f4efe7] text-[#1d2430]">
-      <section className="border-b border-black/5 bg-[#0d2035] px-8 py-16 text-white md:px-14">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#c8a96e]">Brains Clinical Intelligence</p>
-        <div className="mt-6 grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-          <div>
-            <h1 className="max-w-4xl text-5xl leading-tight font-[family-name:var(--font-serif)] md:text-7xl">
-              Cannabinoid trial landscape, ranked for commercial relevance.
-            </h1>
-            <p className="mt-6 max-w-3xl text-base leading-8 text-white/70 md:text-lg">
-              Executive snapshot of the global cannabinoid development landscape: active studies, leading schools,
-              top sponsors, molecule clusters, geographic spread, and highest-value opportunities.
-            </p>
-            <p className="mt-4 text-sm uppercase tracking-[0.2em] text-white/45">
-              Updated {new Date(data.generatedAt).toLocaleString()}
-            </p>
-            <div className="mt-6">
-              <a href="/explorer" className="inline-flex bg-[#c8a96e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#081723]">
-                Open All Trials Explorer
-              </a>
+      <section className="relative overflow-hidden bg-[#071723] px-8 py-24 text-white md:px-14 md:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(200,169,110,0.16),transparent_24%),radial-gradient(circle_at_80%_20%,rgba(94,129,172,0.18),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.06),transparent_30%)]" />
+        <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:72px_72px]" />
+
+        <div className="relative mx-auto max-w-7xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#c8a96e]">Brains Clinical Intelligence</p>
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div>
+              <h1 className="max-w-5xl text-5xl leading-[1.02] font-[family-name:var(--font-serif)] md:text-7xl">
+                The cannabinoid landscape, mapped like an intelligence system — not a spreadsheet.
+              </h1>
+              <p className="mt-8 max-w-3xl text-base leading-8 text-white/72 md:text-lg">
+                Brains Clinical Intelligence surfaces the active cannabinoid trial universe, identifies who matters,
+                scores what is commercially relevant, and turns a fragmented landscape into an actionable BD and pharma-development view.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3 text-xs uppercase tracking-[0.18em] text-white/70">
+                <span className="border border-white/10 bg-white/5 px-3 py-2">Active trials</span>
+                <span className="border border-white/10 bg-white/5 px-3 py-2">Lead researchers</span>
+                <span className="border border-white/10 bg-white/5 px-3 py-2">Patents</span>
+                <span className="border border-white/10 bg-white/5 px-3 py-2">Grants</span>
+                <span className="border border-white/10 bg-white/5 px-3 py-2">Sponsor mapping</span>
+                <span className="border border-white/10 bg-white/5 px-3 py-2">Commercial scoring</span>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                {metric("Total active trials", data.totalActiveTrials)}
+                {metric("Recruiting studies", data.recruitingTrials)}
+                {metric("Schools / institutions", data.totalInstitutions)}
+                {metric("Countries active", data.totalCountries)}
+              </div>
+              <div className="border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+                <div className="text-xs uppercase tracking-[0.22em] text-[#c8a96e]">What the platform does</div>
+                <div className="mt-4 grid gap-3 text-sm leading-7 text-white/75">
+                  <div>01 — Ingests active cannabinoid studies across the live landscape</div>
+                  <div>02 — Cross-references sponsors, schools, researchers, patents, and grants</div>
+                  <div>03 — Scores what is strategically valuable and commercially credible</div>
+                  <div>04 — Gives Brains a faster way to identify good assets earlier</div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {metric("Total active trials", data.totalActiveTrials)}
-            {metric("Recruiting studies", data.recruitingTrials)}
-            {metric("Schools / institutions", data.totalInstitutions)}
-            {metric("Countries active", data.totalCountries)}
+        </div>
+      </section>
+
+      <section className="relative border-b border-black/5 bg-[#0d2035] px-8 py-20 text-white md:px-14">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="border border-white/10 bg-white/5 p-6">
+              <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#c8a96e]">Signal Layer</div>
+              <h2 className="mt-4 text-3xl font-[family-name:var(--font-serif)]">See the market structure.</h2>
+              <p className="mt-4 text-sm leading-8 text-white/72">
+                Instantly understand where the real activity is clustering — by molecule, institution, sponsor, geography, and therapeutic focus.
+              </p>
+            </div>
+            <div className="border border-white/10 bg-white/5 p-6">
+              <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#c8a96e]">Research Layer</div>
+              <h2 className="mt-4 text-3xl font-[family-name:var(--font-serif)]">Know who is worth paying attention to.</h2>
+              <p className="mt-4 text-sm leading-8 text-white/72">
+                Connect trials to investigators, institutions, publications, patent activity, and funding signals to separate noise from serious work.
+              </p>
+            </div>
+            <div className="border border-white/10 bg-white/5 p-6">
+              <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#c8a96e]">Decision Layer</div>
+              <h2 className="mt-4 text-3xl font-[family-name:var(--font-serif)]">Rank what matters commercially.</h2>
+              <p className="mt-4 text-sm leading-8 text-white/72">
+                Use the scoring engine to prioritize the studies, people, and programs most relevant to BD, asset identification, and pharma strategy.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -87,8 +132,13 @@ export default async function Home() {
       <section className="px-8 pb-10 md:px-14">
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="border border-black/5 bg-white p-6 md:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c8a96e]">Highest-value opportunities</p>
-            <h2 className="mt-3 text-3xl font-[family-name:var(--font-serif)] text-[#0d2035]">Top scored studies</h2>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c8a96e]">Highest-value opportunities</p>
+                <h2 className="mt-3 text-3xl font-[family-name:var(--font-serif)] text-[#0d2035]">Top scored studies</h2>
+              </div>
+              <a href="/explorer" className="text-sm font-medium text-[#0d2035] underline underline-offset-4">Open explorer</a>
+            </div>
             <div className="mt-8 space-y-4">
               {data.topTrials.map((trial) => (
                 <div key={trial.id} className="border border-black/6 bg-[#fcfaf7] p-5">
