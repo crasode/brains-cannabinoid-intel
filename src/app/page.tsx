@@ -45,7 +45,12 @@ export default async function Home() {
                 <p className="mt-6 max-w-3xl text-sm uppercase tracking-[0.22em] text-[#c8a96e]">
                   Built to surface high-value opportunities before the rest of the market sees them clearly.
                 </p>
-                <div className="mt-8 flex flex-wrap gap-3 text-xs uppercase tracking-[0.18em] text-white/70">
+                <form action="/explorer" className="mt-8 grid gap-3 md:max-w-3xl md:grid-cols-[1.5fr_1fr_1fr_auto]">
+                  <input name="q" placeholder="Search by study, university, sponsor, PI, condition, or molecule" className="border border-white/10 bg-white/8 px-4 py-4 text-sm text-white placeholder:text-white/40 outline-none backdrop-blur-sm md:col-span-2" />
+                  <input name="minScore" placeholder="Min score" className="border border-white/10 bg-white/8 px-4 py-4 text-sm text-white placeholder:text-white/40 outline-none backdrop-blur-sm" />
+                  <button className="bg-[#c8a96e] px-5 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#081723]">Search</button>
+                </form>
+                <div className="mt-4 flex flex-wrap gap-3 text-xs uppercase tracking-[0.18em] text-white/70">
                   <span className="border border-white/10 bg-white/5 px-3 py-2">Active trial intelligence</span>
                   <span className="border border-white/10 bg-white/5 px-3 py-2">Institutional mapping</span>
                   <span className="border border-white/10 bg-white/5 px-3 py-2">Patent and grant signals</span>
