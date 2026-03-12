@@ -18,9 +18,31 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Brains Cannabinoid Intelligence Platform",
+  metadataBase: new URL("https://brainsai.app"),
+  title: "Brains Clinical Intelligence",
   description:
-    "Brains-branded internal dashboard for tracking global cannabinoid API trials and cross-referenced researcher, patent, and grant intelligence.",
+    "Commercial cannabinoid clinical intelligence platform for tracking active trials, leading institutions, sponsor activity, patents, grants, and high-value opportunities.",
+  openGraph: {
+    title: "Brains Clinical Intelligence",
+    description:
+      "Commercial cannabinoid clinical intelligence platform for tracking active trials, leading institutions, sponsor activity, patents, grants, and high-value opportunities.",
+    url: "https://brainsai.app",
+    siteName: "Brains Clinical Intelligence",
+    images: ["/opengraph-image"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Brains Clinical Intelligence",
+    description:
+      "Commercial cannabinoid clinical intelligence platform for tracking active trials, leading institutions, sponsor activity, patents, grants, and high-value opportunities.",
+    images: ["/twitter-image"],
+  },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
