@@ -34,6 +34,11 @@ export type DashboardPayload = {
   totalInstitutions: number;
   totalCountries: number;
   newlyAddedCount: number;
+  changesSummary: {
+    newlyAdded: number;
+    recentlyUpdated: number;
+    highScoreCount: number;
+  };
   topTrials: EnrichedTrial[];
   latestTrials: EnrichedTrial[];
   sponsorMap: { name: string; count: number }[];

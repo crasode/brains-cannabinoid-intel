@@ -256,6 +256,11 @@ export async function getDashboardData(): Promise<DashboardPayload> {
     totalInstitutions,
     totalCountries,
     newlyAddedCount,
+    changesSummary: {
+      newlyAdded: newlyAddedCount,
+      recentlyUpdated: byUpdate.filter((t) => t.lastUpdated && new Date(t.lastUpdated).getTime() >= twoWeeksAgo).length,
+      highScoreCount: enriched.filter((t) => t.commercialScore >= 70).length,
+    },
     topTrials: byScore.slice(0, 8),
     latestTrials: byUpdate.slice(0, 8),
     sponsorMap,

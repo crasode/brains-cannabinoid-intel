@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NoteBox } from "@/components/NoteBox";
 import { TopNav } from "@/components/TopNav";
 import { summarizeWhyItMatters } from "@/lib/intel";
 import { getAllTrials } from "@/lib/live-data";
@@ -81,6 +82,7 @@ export default async function StudyDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
+            <NoteBox id={trial.id} />
             <div className="border border-black/5 bg-white p-6">
               <h2 className="text-2xl font-[family-name:var(--font-serif)] text-[#0d2035]">Timeline</h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-[#526174]">
