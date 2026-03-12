@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NoteBox } from "@/components/NoteBox";
 import { TopNav } from "@/components/TopNav";
+import { WatchMetaEditor } from "@/components/WatchMetaEditor";
 import { summarizeWhyItMatters } from "@/lib/intel";
 import { getAllTrials } from "@/lib/live-data";
 
@@ -48,6 +49,7 @@ export default async function StudyDetailPage({ params }: { params: Promise<{ id
 
             <div className="border border-black/5 bg-white p-6">
               <h2 className="text-2xl font-[family-name:var(--font-serif)] text-[#0d2035]">Commercial relevance breakdown</h2>
+              <p className="mt-3 text-sm leading-7 text-[#526174]">This score blends stage, sponsor quality, institution quality, indication relevance, geography, patent activity, grant backing, publication signal, and recency. It is intended as a prioritization signal for BD and strategic review, not a regulatory or investment certainty measure.</p>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {Object.entries(trial.scoringBreakdown).map(([key, value]) => (
                   <div key={key} className="border border-black/5 bg-[#fcfaf7] p-4">
@@ -82,6 +84,7 @@ export default async function StudyDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
+            <WatchMetaEditor id={trial.id} />
             <NoteBox id={trial.id} />
             <div className="border border-black/5 bg-white p-6">
               <h2 className="text-2xl font-[family-name:var(--font-serif)] text-[#0d2035]">Timeline</h2>
