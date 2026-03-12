@@ -1,4 +1,3 @@
-import { ACTIVE_STATUSES, CANNABINOID_TERMS } from "./sources";
 import { scoreTrial } from "./scoring";
 import { DashboardPayload, EnrichedTrial } from "./types";
 
@@ -12,10 +11,13 @@ type CtGovStudy = {
     sponsorCollaboratorsModule?: { leadSponsor?: { name?: string }; collaborators?: { name?: string }[] };
     contactsLocationsModule?: {
       overallOfficials?: { name?: string; affiliation?: string; role?: string }[];
+      centralContacts?: { name?: string; email?: string }[];
       locations?: { facility?: string; country?: string }[];
     };
   };
 };
+
+export const dynamic = "force-dynamic";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, next: { revalidate: 60 * 60 * 6 } });
@@ -23,29 +25,56 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json();
 }
 
-async function fetchClinicalTrialsStudies(): Promise<CtGovStudy[]> {
-  const queryPlans: Array<{ field: "term" | "cond" | "intr"; term: string }> = [
-    { field: "term", term: "cannabinoid" },
-    { field: "term", term: "cannabidiol" },
-    { field: "term", term: "tetrahydrocannabinol" },
-    { field: "term", term: "dronabinol" },
-    { field: "term", term: "nabiximols" },
-    { field: "term", term: "nabilone" },
-    { field: "term", term: "cannabigerol" },
-    { field: "term", term: "cannabinol" },
-    { field: "cond", term: "cannabinoid" },
-    { field: "cond", term: "cannabidiol" },
-    { field: "cond", term: "tetrahydrocannabinol" },
-    { field: "intr", term: "cannabinoid" },
-    { field: "intr", term: "cannabidiol" },
-    { field: "intr", term: "tetrahydrocannabinol" },
-    { field: "intr", term: "dronabinol" },
-    { field: "intr", term: "nabiximols" },
-  ];
+const QUERY_PLANS: Array<{ field: "term" | "cond" | "intr"; term: string }> = [
+  { field: "term", term: "cannabinoid" },
+  { field: "term", term: "cannabidiol" },
+  { field: "term", term: "tetrahydrocannabinol" },
+  { field: "term", term: "dronabinol" },
+  { field: "term", term: "nabiximols" },
+  { field: "term", term: "nabilone" },
+  { field: "term", term: "cannabigerol" },
+  { field: "term", term: "cannabinol" },
+  { field: "term", term: "synthetic cannabinoid" },
+  { field: "cond", term: "cannabinoid" },
+  { field: "cond", term: "cannabidiol" },
+  { field: "cond", term: "tetrahydrocannabinol" },
+  { field: "intr", term: "cannabinoid" },
+  { field: "intr", term: "cannabidiol" },
+  { field: "intr", term: "tetrahydrocannabinol" },
+  { field: "intr", term: "dronabinol" },
+  { field: "intr", term: "nabiximols" },
+];
 
+function cleanText(value?: string) {
+  if (!value) return "";
+  return value
+    .replace(/<mark[^>]*>/gi, "")
+    .replace(/<\/mark>/gi, "")
+    .replace(/&rarr;/g, "→")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function summarizeTitle(title: string) {
+  const cleaned = cleanText(title);
+  const compact = cleaned
+    .replace(/^PK\/PD of /i, "PK/PD: ")
+    .replace(/^Comparing /i, "Comparison: ")
+    .replace(/^Improvement of Quality of Life by /i, "Quality of Life: ")
+    .replace(/ in Older Adults$/i, " — Older Adults")
+    .replace(/ in the Emergency Department$/i, " — Emergency Department");
+
+  if (compact.length <= 110) return compact;
+  const parts = compact.split(": ");
+  if (parts.length > 1) return `${parts[0]}: ${parts[1].slice(0, 72).trim()}…`;
+  return `${compact.slice(0, 96).trim()}…`;
+}
+
+async function fetchClinicalTrialsStudies(): Promise<CtGovStudy[]> {
   const map = new Map<string, CtGovStudy>();
 
-  for (const query of queryPlans) {
+  for (const query of QUERY_PLANS) {
     let from = 0;
     while (from < 300) {
       const url = `https://clinicaltrials.gov/api/int/studies?aggFilters=status:rec%20act%20not&from=${from}&limit=100&fields=OverallStatus%2CBriefTitle%2CCondition%2CInterventionName%2CLocationCountry%2CCentralContactName%2CCentralContactEMail%2CNCTId%2CStudyType%2CLeadSponsorName%2CPhase%2CStudyFirstPostDate%2CLastUpdatePostDate%2COverallOfficialName%2COverallOfficialAffiliation&columns=conditions%2Cinterventions%2Ccollaborators&highlight=true&sort=%40relevance&query.${query.field}=${encodeURIComponent(query.term)}`;
@@ -73,11 +102,7 @@ async function fetchClinicalTrialsStudies(): Promise<CtGovStudy[]> {
 async function getPatentCount(name: string): Promise<number> {
   if (!name) return 0;
   try {
-    const body = {
-      q: { _text_any: { patent_title: name } },
-      f: ["patent_id"],
-      o: { size: 5 },
-    };
+    const body = { q: { _text_any: { patent_title: name } }, f: ["patent_id"], o: { size: 5 } };
     const response = await fetch("https://api.patentsview.org/patents/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -120,32 +145,6 @@ async function getPublicationCount(name: string): Promise<number> {
   }
 }
 
-function cleanText(value?: string) {
-  if (!value) return "";
-  return value
-    .replace(/<mark[^>]*>/gi, "")
-    .replace(/<\/mark>/gi, "")
-    .replace(/&rarr;/g, "→")
-    .replace(/&amp;/g, "&")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function summarizeTitle(title: string) {
-  const cleaned = cleanText(title);
-  const compact = cleaned
-    .replace(/^PK\/PD of /i, "PK/PD: ")
-    .replace(/^Comparing /i, "Comparison: ")
-    .replace(/^Improvement of Quality of Life by /i, "Quality of Life: ")
-    .replace(/ in Older Adults$/i, " — Older Adults")
-    .replace(/ in the Emergency Department$/i, " — Emergency Department");
-
-  if (compact.length <= 110) return compact;
-  const parts = compact.split(": ");
-  if (parts.length > 1) return `${parts[0]}: ${parts[1].slice(0, 72).trim()}…`;
-  return `${compact.slice(0, 96).trim()}…`;
-}
-
 function normalizeStudy(study: CtGovStudy) {
   const protocol = study.protocolSection || {};
   const id = protocol.identificationModule?.nctId || protocol.identificationModule?.orgStudyIdInfo?.id || crypto.randomUUID();
@@ -157,7 +156,11 @@ function normalizeStudy(study: CtGovStudy) {
   const interventions = (protocol.armsInterventionsModule?.interventions || []).map((item) => cleanText(item.name)).filter(Boolean) as string[];
   const sponsors = [protocol.sponsorCollaboratorsModule?.leadSponsor?.name, ...(protocol.sponsorCollaboratorsModule?.collaborators || []).map((x) => x.name)].map(cleanText).filter(Boolean) as string[];
   const overallOfficials = protocol.contactsLocationsModule?.overallOfficials || [];
-  const leadResearchers = overallOfficials.map((x) => cleanText(x.name)).filter(Boolean) as string[];
+  const centralContacts = protocol.contactsLocationsModule?.centralContacts || [];
+  const leadResearchers = [
+    ...overallOfficials.map((x) => cleanText(x.name)),
+    ...centralContacts.map((x) => cleanText(x.name)),
+  ].filter(Boolean) as string[];
   const institutions = [...new Set(overallOfficials.map((x) => cleanText(x.affiliation)).filter(Boolean) as string[])];
   const countries = [...new Set((protocol.contactsLocationsModule?.locations || []).map((x) => cleanText(x.country)).filter(Boolean) as string[])];
   const firstPosted = protocol.statusModule?.studyFirstPostDateStruct?.date;
@@ -165,22 +168,19 @@ function normalizeStudy(study: CtGovStudy) {
   return { id, title, status, phase, condition, interventions, sponsors, institutions, countries, leadResearchers, firstPosted, lastUpdated };
 }
 
-export async function getDashboardData(): Promise<DashboardPayload> {
+export async function getAllTrials(): Promise<EnrichedTrial[]> {
   const studies = await fetchClinicalTrialsStudies();
-
   const enriched = await Promise.all(
     studies.map(async (study) => {
       const normalized = normalizeStudy(study);
       const researcher = normalized.leadResearchers[0] || normalized.sponsors[0] || normalized.title;
       const sponsorQuery = normalized.sponsors[0] || normalized.title;
       const institutionQuery = normalized.institutions[0] || researcher;
-
       const [patentCount, grantCount, publicationCount] = await Promise.all([
         getPatentCount(sponsorQuery),
         getGrantCount(researcher),
         getPublicationCount(institutionQuery),
       ]);
-
       return scoreTrial({
         id: normalized.id,
         title: normalized.title,
@@ -201,9 +201,13 @@ export async function getDashboardData(): Promise<DashboardPayload> {
       });
     }),
   );
+  return enriched.sort((a, b) => b.commercialScore - a.commercialScore);
+}
 
+export async function getDashboardData(): Promise<DashboardPayload> {
+  const enriched = await getAllTrials();
   const byScore = [...enriched].sort((a, b) => b.commercialScore - a.commercialScore);
-  const byUpdate = [...enriched].sort((a, b) => (new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime()));
+  const byUpdate = [...enriched].sort((a, b) => new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime());
 
   const sponsorMap = Object.entries(
     enriched.reduce<Record<string, number>>((acc, trial) => {

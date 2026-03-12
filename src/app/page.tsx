@@ -27,6 +27,11 @@ export default async function Home() {
             <p className="mt-4 text-sm uppercase tracking-[0.2em] text-white/45">
               Updated {new Date(data.generatedAt).toLocaleString()}
             </p>
+            <div className="mt-6">
+              <a href="/explorer" className="inline-flex bg-[#c8a96e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#081723]">
+                Open All Trials Explorer
+              </a>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="border border-white/10 bg-white/5 p-5">
