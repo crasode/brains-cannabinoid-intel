@@ -30,9 +30,15 @@ export type EnrichedTrial = {
 export type DashboardPayload = {
   generatedAt: string;
   totalActiveTrials: number;
+  recruitingTrials: number;
+  totalInstitutions: number;
+  totalCountries: number;
   newlyAddedCount: number;
   topTrials: EnrichedTrial[];
   latestTrials: EnrichedTrial[];
   sponsorMap: { name: string; count: number }[];
   institutionMap: { name: string; count: number }[];
+  moleculeMap: { name: string; count: number }[];
+  conditionMap: { name: string; count: number }[];
+  geographyMap: { name: string; count: number }[];
 };

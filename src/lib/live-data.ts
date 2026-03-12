@@ -204,35 +204,61 @@ export async function getAllTrials(): Promise<EnrichedTrial[]> {
   return enriched.sort((a, b) => b.commercialScore - a.commercialScore);
 }
 
+function topCounts(values: string[]) {
+  return Object.entries(
+    values.reduce<Record<string, number>>((acc, item) => {
+      if (!item) return acc;
+      acc[item] = (acc[item] || 0) + 1;
+      return acc;
+    }, {}),
+  )
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function detectMolecules(trial: EnrichedTrial) {
+  const haystack = [trial.title, ...trial.interventions, ...trial.condition].join(" ").toLowerCase();
+  const hits = [] as string[];
+  if (haystack.includes("cannabidiol") || haystack.includes(" cbd")) hits.push("CBD");
+  if (haystack.includes("tetrahydrocannabinol") || haystack.includes(" thc") || haystack.includes("dronabinol")) hits.push("THC / Dronabinol");
+  if (haystack.includes("nabiximols")) hits.push("Nabiximols");
+  if (haystack.includes("nabilone")) hits.push("Nabilone");
+  if (haystack.includes("cannabigerol") || haystack.includes(" cbg")) hits.push("CBG");
+  if (haystack.includes("cannabinol") || haystack.includes(" cbn")) hits.push("CBN");
+  if (haystack.includes("synthetic cannabinoid")) hits.push("Synthetic cannabinoids");
+  return hits.length ? hits : ["Other cannabinoid"];
+}
+
 export async function getDashboardData(): Promise<DashboardPayload> {
   const enriched = await getAllTrials();
   const byScore = [...enriched].sort((a, b) => b.commercialScore - a.commercialScore);
   const byUpdate = [...enriched].sort((a, b) => new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime());
 
-  const sponsorMap = Object.entries(
-    enriched.reduce<Record<string, number>>((acc, trial) => {
-      trial.sponsors.forEach((s) => { if (s) acc[s] = (acc[s] || 0) + 1; });
-      return acc;
-    }, {}),
-  ).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 10);
-
-  const institutionMap = Object.entries(
-    enriched.reduce<Record<string, number>>((acc, trial) => {
-      trial.institutions.forEach((s) => { if (s) acc[s] = (acc[s] || 0) + 1; });
-      return acc;
-    }, {}),
-  ).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 10);
+  const sponsorMap = topCounts(enriched.flatMap((trial) => trial.sponsors)).slice(0, 10);
+  const institutionMap = topCounts(enriched.flatMap((trial) => trial.institutions)).slice(0, 10);
+  const moleculeMap = topCounts(enriched.flatMap((trial) => detectMolecules(trial))).slice(0, 10);
+  const conditionMap = topCounts(enriched.flatMap((trial) => trial.condition)).slice(0, 10);
+  const geographyMap = topCounts(enriched.flatMap((trial) => trial.countries)).slice(0, 10);
 
   const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
   const newlyAddedCount = enriched.filter((t) => t.firstPosted && new Date(t.firstPosted).getTime() >= twoWeeksAgo).length;
+  const recruitingTrials = enriched.filter((t) => t.status === "RECRUITING").length;
+  const totalInstitutions = new Set(enriched.flatMap((t) => t.institutions).filter(Boolean)).size;
+  const totalCountries = new Set(enriched.flatMap((t) => t.countries).filter(Boolean)).size;
 
   return {
     generatedAt: new Date().toISOString(),
     totalActiveTrials: enriched.length,
+    recruitingTrials,
+    totalInstitutions,
+    totalCountries,
     newlyAddedCount,
     topTrials: byScore.slice(0, 8),
     latestTrials: byUpdate.slice(0, 8),
     sponsorMap,
     institutionMap,
+    moleculeMap,
+    conditionMap,
+    geographyMap,
   };
 }
