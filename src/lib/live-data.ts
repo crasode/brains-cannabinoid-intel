@@ -1,3 +1,5 @@
+import { getOpenAlexInstitutionWorks } from "./openalex";
+import { dedupeNormalized } from "./normalize";
 import { scoreTrial } from "./scoring";
 import { DashboardPayload, EnrichedTrial } from "./types";
 
@@ -154,15 +156,15 @@ function normalizeStudy(study: CtGovStudy) {
   const phase = protocol.designModule?.phases?.join(", ") || "Not specified";
   const condition = (protocol.conditionsModule?.conditions || []).map(cleanText).filter(Boolean);
   const interventions = (protocol.armsInterventionsModule?.interventions || []).map((item) => cleanText(item.name)).filter(Boolean) as string[];
-  const sponsors = [protocol.sponsorCollaboratorsModule?.leadSponsor?.name, ...(protocol.sponsorCollaboratorsModule?.collaborators || []).map((x) => x.name)].map(cleanText).filter(Boolean) as string[];
+  const sponsors = dedupeNormalized([protocol.sponsorCollaboratorsModule?.leadSponsor?.name, ...(protocol.sponsorCollaboratorsModule?.collaborators || []).map((x) => x.name)].map(cleanText).filter(Boolean) as string[]);
   const overallOfficials = protocol.contactsLocationsModule?.overallOfficials || [];
   const centralContacts = protocol.contactsLocationsModule?.centralContacts || [];
-  const leadResearchers = [
+  const leadResearchers = dedupeNormalized([
     ...overallOfficials.map((x) => cleanText(x.name)),
     ...centralContacts.map((x) => cleanText(x.name)),
-  ].filter(Boolean) as string[];
-  const institutions = [...new Set(overallOfficials.map((x) => cleanText(x.affiliation)).filter(Boolean) as string[])];
-  const countries = [...new Set((protocol.contactsLocationsModule?.locations || []).map((x) => cleanText(x.country)).filter(Boolean) as string[])];
+  ].filter(Boolean) as string[]);
+  const institutions = dedupeNormalized(overallOfficials.map((x) => cleanText(x.affiliation)).filter(Boolean) as string[]);
+  const countries = dedupeNormalized((protocol.contactsLocationsModule?.locations || []).map((x) => cleanText(x.country)).filter(Boolean) as string[]);
   const firstPosted = protocol.statusModule?.studyFirstPostDateStruct?.date;
   const lastUpdated = protocol.statusModule?.lastUpdatePostDateStruct?.date;
   return { id, title, status, phase, condition, interventions, sponsors, institutions, countries, leadResearchers, firstPosted, lastUpdated };
@@ -176,10 +178,11 @@ export async function getAllTrials(): Promise<EnrichedTrial[]> {
       const researcher = normalized.leadResearchers[0] || normalized.sponsors[0] || normalized.title;
       const sponsorQuery = normalized.sponsors[0] || normalized.title;
       const institutionQuery = normalized.institutions[0] || researcher;
-      const [patentCount, grantCount, publicationCount] = await Promise.all([
+      const [patentCount, grantCount, publicationCount, institutionWorks] = await Promise.all([
         getPatentCount(sponsorQuery),
         getGrantCount(researcher),
         getPublicationCount(institutionQuery),
+        getOpenAlexInstitutionWorks(institutionQuery),
       ]);
       return scoreTrial({
         id: normalized.id,
@@ -197,7 +200,7 @@ export async function getAllTrials(): Promise<EnrichedTrial[]> {
         sourceUrl: `https://clinicaltrials.gov/study/${normalized.id}`,
         patentCount,
         grantCount,
-        publicationCount,
+        publicationCount: publicationCount + institutionWorks,
       });
     }),
   );

@@ -1,3 +1,4 @@
+import { indicationScore, institutionScore, sponsorTierScore } from "./enrichment";
 import { EnrichedTrial } from "./types";
 
 function scorePhase(phase: string) {
@@ -10,11 +11,7 @@ function scorePhase(phase: string) {
 }
 
 function scoreSponsor(sponsors: string[]) {
-  const joined = sponsors.join(" ").toLowerCase();
-  if (joined.includes("teva") || joined.includes("pfizer") || joined.includes("novartis") || joined.includes("jazz")) return 15;
-  if (sponsors.length >= 2) return 11;
-  if (sponsors.length === 1) return 8;
-  return 4;
+  return sponsorTierScore(sponsors);
 }
 
 function scoreGeography(countries: string[]) {
@@ -39,10 +36,12 @@ export function scoreTrial(input: Omit<EnrichedTrial, "commercialScore" | "scori
   const geography = scoreGeography(input.countries);
   const patents = Math.min(input.patentCount * 4, 15);
   const grants = Math.min(input.grantCount * 4, 12);
-  const publications = Math.min(input.publicationCount * 2, 14);
+  const publications = Math.min(input.publicationCount * 2, 12);
   const recency = scoreRecency(input.lastUpdated);
+  const institution = institutionScore(input.institutions);
+  const indication = indicationScore(input.condition);
 
-  const total = Math.min(100, phase + sponsor + geography + patents + grants + publications + recency);
+  const total = Math.min(100, phase + sponsor + geography + patents + grants + publications + recency + institution + indication);
 
   return {
     ...input,
