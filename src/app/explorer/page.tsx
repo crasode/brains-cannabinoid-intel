@@ -115,7 +115,10 @@ export default async function ExplorerPage({ searchParams }: Params) {
                     <div className="font-semibold text-[#0d2035]">{trial.title}</div>
                     <div className="mt-1 text-xs uppercase tracking-[0.15em] text-[#7a8794]">{trial.id} · {trial.status}</div>
                     <div className="mt-2 text-[#526174]">{trial.condition.slice(0, 2).join(", ") || "No condition listed"}</div>
-                    <a href={trial.sourceUrl} target="_blank" className="mt-2 inline-block text-xs font-medium text-[#0d2035] underline underline-offset-4">Source</a>
+                    <div className="mt-2 flex gap-3">
+                      <a href={`/study/${trial.id}`} className="inline-block text-xs font-medium text-[#0d2035] underline underline-offset-4">Detail</a>
+                      <a href={trial.sourceUrl} target="_blank" className="inline-block text-xs font-medium text-[#0d2035] underline underline-offset-4">Source</a>
+                    </div>
                   </td>
                   <td className="px-4 py-4 text-[#526174]">
                     <div>{trial.sponsors[0] || "Unknown sponsor"}</div>
