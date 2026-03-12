@@ -24,22 +24,46 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 async function fetchClinicalTrialsStudies(): Promise<CtGovStudy[]> {
-  const responses = await Promise.all(
-    CANNABINOID_TERMS.slice(0, 8).map(async (term) => {
-      const url = `https://clinicaltrials.gov/api/int/studies?aggFilters=status:rec%20act%20not&from=0&limit=12&fields=OverallStatus%2CBriefTitle%2CCondition%2CInterventionName%2CLocationCountry%2CCentralContactName%2CCentralContactEMail%2CNCTId%2CStudyType%2CLeadSponsorName%2CPhase%2CStudyFirstPostDate%2CLastUpdatePostDate%2COverallOfficialName%2COverallOfficialAffiliation&columns=conditions%2Cinterventions%2Ccollaborators&highlight=true&sort=%40relevance&query.term=${encodeURIComponent(term)}`;
-      return fetchJson<any>(url);
-    }),
-  );
+  const queryPlans: Array<{ field: "term" | "cond" | "intr"; term: string }> = [
+    { field: "term", term: "cannabinoid" },
+    { field: "term", term: "cannabidiol" },
+    { field: "term", term: "tetrahydrocannabinol" },
+    { field: "term", term: "dronabinol" },
+    { field: "term", term: "nabiximols" },
+    { field: "term", term: "nabilone" },
+    { field: "term", term: "cannabigerol" },
+    { field: "term", term: "cannabinol" },
+    { field: "cond", term: "cannabinoid" },
+    { field: "cond", term: "cannabidiol" },
+    { field: "cond", term: "tetrahydrocannabinol" },
+    { field: "intr", term: "cannabinoid" },
+    { field: "intr", term: "cannabidiol" },
+    { field: "intr", term: "tetrahydrocannabinol" },
+    { field: "intr", term: "dronabinol" },
+    { field: "intr", term: "nabiximols" },
+  ];
 
   const map = new Map<string, CtGovStudy>();
-  for (const response of responses) {
-    for (const hit of response?.hits || []) {
-      const study = hit?.study as CtGovStudy | undefined;
-      const nctId = study?.protocolSection?.identificationModule?.nctId;
-      if (!study || !nctId) continue;
-      const type = study?.protocolSection?.designModule?.studyType || "";
-      if (type && type !== "INTERVENTIONAL") continue;
-      map.set(nctId, study);
+
+  for (const query of queryPlans) {
+    let from = 0;
+    while (from < 300) {
+      const url = `https://clinicaltrials.gov/api/int/studies?aggFilters=status:rec%20act%20not&from=${from}&limit=100&fields=OverallStatus%2CBriefTitle%2CCondition%2CInterventionName%2CLocationCountry%2CCentralContactName%2CCentralContactEMail%2CNCTId%2CStudyType%2CLeadSponsorName%2CPhase%2CStudyFirstPostDate%2CLastUpdatePostDate%2COverallOfficialName%2COverallOfficialAffiliation&columns=conditions%2Cinterventions%2Ccollaborators&highlight=true&sort=%40relevance&query.${query.field}=${encodeURIComponent(query.term)}`;
+      const response = await fetchJson<any>(url);
+      const hits = response?.hits || [];
+      if (!hits.length) break;
+
+      for (const hit of hits) {
+        const study = hit?.study as CtGovStudy | undefined;
+        const nctId = study?.protocolSection?.identificationModule?.nctId;
+        if (!study || !nctId) continue;
+        const type = study?.protocolSection?.designModule?.studyType || "";
+        if (type && type !== "INTERVENTIONAL") continue;
+        map.set(nctId, study);
+      }
+
+      if (hits.length < 100) break;
+      from += hits.length;
     }
   }
 
