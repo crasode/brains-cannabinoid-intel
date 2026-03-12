@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TopNav } from "@/components/TopNav";
+import { summarizeWhyItMatters } from "@/lib/intel";
 import { getAllTrials } from "@/lib/live-data";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +25,7 @@ export default async function StudyDetailPage({ params }: { params: Promise<{ id
   return (
     <main className="min-h-screen bg-[#f4efe7] px-6 py-12 text-[#1d2430] md:px-10">
       <div className="mx-auto max-w-6xl space-y-6">
+        <TopNav />
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#c8a96e]">Brains Clinical Intelligence</p>
@@ -70,6 +73,7 @@ export default async function StudyDetailPage({ params }: { params: Promise<{ id
           <div className="space-y-6">
             <div className="border border-black/5 bg-white p-6">
               <h2 className="text-2xl font-[family-name:var(--font-serif)] text-[#0d2035]">Signal summary</h2>
+              <p className="mt-3 text-sm leading-7 text-[#526174]">{summarizeWhyItMatters(trial)}.</p>
               <div className="mt-5 grid gap-4">
                 <div className="border border-black/5 bg-[#fcfaf7] p-4"><div className="text-xs uppercase tracking-[0.16em] text-[#7a8794]">Patent activity</div><div className="mt-2 text-3xl font-[family-name:var(--font-serif)] text-[#0d2035]">{trial.patentCount}</div></div>
                 <div className="border border-black/5 bg-[#fcfaf7] p-4"><div className="text-xs uppercase tracking-[0.16em] text-[#7a8794]">Grant activity</div><div className="mt-2 text-3xl font-[family-name:var(--font-serif)] text-[#0d2035]">{trial.grantCount}</div></div>
