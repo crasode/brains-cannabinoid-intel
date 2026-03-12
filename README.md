@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Brains Cannabinoid Intelligence Platform
 
-## Getting Started
+Brains-branded internal MVP for tracking global cannabinoid API trials and cross-referencing public trial data with investigator history, patents, grants, and funding records.
 
-First, run the development server:
+## Current MVP
+
+- Protected internal dashboard
+- Password gate via `APP_PASSWORD` (`BSPG` placeholder)
+- Global cannabinoid scope including:
+  - CBD
+  - THC / D9-THC
+  - CBN
+  - CBG
+  - synthetic cannabinoids
+  - cannabinoid analogs
+  - cannabinoid prodrugs
+  - NCEs containing cannabinoid structures
+- Sample cross-referenced trial data model
+- Free data source catalog for first implementation phase
+
+## Free-source targets for ingestion
+
+- ClinicalTrials.gov
+- EU CTIS / EU Clinical Trials Register
+- ISRCTN
+- WHO ICTRP (where accessible)
+- PubMed
+- Crossref / OpenAlex
+- Google Patents / Lens-style patent sources
+- NIH RePORTER
+- CORDIS
+- NSF Awards
+- UKRI / public grant sources
+- ORCID + institutional profile enrichment
+
+## Priority build order
+
+1. Trial ingestion and normalization
+2. Canonical people / institution / sponsor entity resolution
+3. Publication, patent, and grant enrichment
+4. Daily sync jobs and change detection
+5. Alerting for new trials and material updates
+
+## Local run
 
 ```bash
+cp .env.example .env.local
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open `http://localhost:3000` and enter the password.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Security note
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This is a starter password gate for internal use only. Before any real deployment:
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- replace the placeholder password
+- keep the repo private
+- move auth to proper identity-based access
+- store secrets outside the repo
