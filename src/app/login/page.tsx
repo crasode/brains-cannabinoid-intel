@@ -1,28 +1,36 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    setError("");
+    setSubmitting(true);
 
-    if (!response.ok) {
-      setError("Incorrect password.");
-      return;
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ password }),
+      });
+
+      if (!response.ok) {
+        setError("Incorrect password.");
+        setSubmitting(false);
+        return;
+      }
+
+      window.location.href = "/";
+    } catch {
+      setError("Login failed. Please try again.");
+      setSubmitting(false);
     }
-
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -37,13 +45,17 @@ export default function LoginPage() {
           <input
             type="password"
             value={password}
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck={false}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             className="w-full border border-white/15 bg-[#0d2035] px-4 py-3 outline-none"
           />
           {error ? <p className="text-sm text-red-300">{error}</p> : null}
-          <button className="w-full bg-[#c8a96e] px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#081723]">
-            Enter
+          <button disabled={submitting} className="w-full bg-[#c8a96e] px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#081723] disabled:opacity-60">
+            {submitting ? "Entering..." : "Enter"}
           </button>
         </form>
       </div>
